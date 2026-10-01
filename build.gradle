@@ -1,0 +1,106 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.5'
+    id 'nu.studer.jooq' version '8.0'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // PostgreSQL
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Liquibase
+    implementation 'org.liquibase:liquibase-core'
+
+    // jOOQ (version managed by Spring Boot BOM)
+    implementation 'org.springframework.boot:spring-boot-starter-jooq'
+    jooqGenerator 'org.postgresql:postgresql'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    testCompileOnly 'org.projectlombok:lombok:1.18.32'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+    // MapStruct (must come after Lombok in annotationProcessor order)
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    // Springdoc OpenAPI (Swagger UI)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// ─── jOOQ code generation ────────────────────────────────────────────────────
+jooq {
+    version = dependencyManagement.importedProperties['jooq.version']
+
+    configurations {
+        main {
+            generationTool {
+                jdbc {
+                    driver   = 'org.postgresql.Driver'
+                    url      = 'jdbc:postgresql://localhost:5432/ems'
+                    user     = 'postgres'
+                    password = '1234'
+                }
+                generator {
+                    name = 'org.jooq.codegen.DefaultGenerator'
+                    database {
+                        name            = 'org.jooq.meta.postgres.PostgresDatabase'
+                        inputSchema     = 'public'
+                        includes        = 'employee'
+                        excludes        = 'databasechangelog|databasechangeloglock'
+                    }
+                    generate {
+                        deprecated        = false
+                        records           = true
+                        immutablePojos    = false
+                        fluentSetters     = true
+                    }
+                    target {
+                        packageName = 'com.example.ems.jooq'
+                        directory   = 'build/generated-src/jooq'
+                    }
+                }
+            }
+        }
+    }
+}
+
+springBoot {
+    mainClass = 'com.example.ems.EmsApplication'
+}
+
+// ─── Include generated jOOQ sources in the main source set ──────────────────
+sourceSets {
+    main {
+        java {
+            srcDir 'build/generated-src/jooq'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

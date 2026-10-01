@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Secrets — never commit real credentials
+src/main/resources/application.properties
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log
+
+# OS
+.DS_Store
+Thumbs.db
