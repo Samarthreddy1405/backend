@@ -8,6 +8,12 @@
 
     <changeSet id="202609301630-create-employee-table" author="samarth">
 
+        <comment>
+            Creates the employee table for the Employee Management System.
+            The is_active field supports soft deactivation and reactivation
+            without physically deleting employee records.
+        </comment>
+
         <createTable tableName="employee">
 
             <column name="id" type="BIGINT" autoIncrement="true">
@@ -35,6 +41,18 @@
             </column>
 
         </createTable>
+
+        <createIndex indexName="idx_employee_department" tableName="employee">
+            <column name="department"/>
+        </createIndex>
+
+        <createIndex indexName="idx_employee_is_active" tableName="employee">
+            <column name="is_active"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="employee"/>
+        </rollback>
 
     </changeSet>
 
